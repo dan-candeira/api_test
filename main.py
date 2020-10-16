@@ -103,8 +103,8 @@ sample_data = {
 }
 
 
-def write_excel(START_TIMER, BYTE_SIZE, 
-                FINAL_TIMER, LATENCY, OPERATION, CENARIO, QT_REQ):
+def write_excel(start_timer, qt_bytes, 
+                final_timer, latency, operation, cenario, qt_requisicoes):
 
     hardware_config = f'''
     {platform.uname()}
@@ -116,21 +116,21 @@ def write_excel(START_TIMER, BYTE_SIZE,
     ram: 2gb
     '''
 
-
+    latencia = str(latency)
     table_row = pd.DataFrame({
-    "id_experimento": str(START_TIMER).replace(':', '').replace('.' ,''), 
+    "id_experimento": str(start_timer).replace(':', '').replace('.' ,''), 
     "data": dt.now().date(),
     "hora": dt.now().time(),
-    "I_O": OPERATION, 
-    "cenario": CENARIO, 
+    "I_O": operation, 
+    "cenario": cenario, 
     "configuracao_hard": hardware_config, 
     "configuracao_soft": software_config, 
     "funcao_api": "/sample", 
-    "qt_bytes": BYTE_SIZE, 
-    "qt_requisicoes": QT_REQ,
-    "time_stamp_init": START_TIMER, 
-    "time_stamp_fin": FINAL_TIMER, 
-    "latencia ( J - I )": str(LATENCY)
+    "qt_bytes": qt_bytes, 
+    "qt_requisicoesuisicoes": qt_requisicoes,
+    "time_stamp_init": start_timer, 
+    "time_stamp_fin": final_timer, 
+    "latencia ( J - I )": str(latencia)
     })
 
     append_df_to_excel(
@@ -143,44 +143,44 @@ sample_ids = [] # store sample ids in this array after each create
 
 
 def write(MAX_RANGE):
-    BYTE_SIZE = sys.getsizeof(sample_data) * MAX_RANGE
+    qt_bytes = sys.getsizeof(sample_data) * MAX_RANGE
 
     iteration = 0
 
     # writing samples
-    START_TIMER = dt.now()
+    start_timer = dt.now()
     for iteration in range(MAX_RANGE):
         sample_request = requests.post(f'{API_url}/sample/', data = sample_data)
         if(sample_request.status_code == 201):
             sample_ids.append(sample_request.json()['_id'])
             iteration+=1
     FIN_TIMER = dt.now()
-    LATENCY = FIN_TIMER - START_TIMER
-    OPERATION='I'
-    CENARIO='write'
-    QT_REQ=MAX_RANGE
+    latencia = FIN_TIMER - start_timer
+    operation='I'
+    cenario='write'
+    qt_requisicoes=MAX_RANGE
 
-    write_excel(START_TIMER, BYTE_SIZE, FIN_TIMER, LATENCY, OPERATION, CENARIO,QT_REQ )
+    write_excel(start_timer, qt_bytes, FIN_TIMER, latencia, operation, cenario,qt_requisicoes )
 
     print('finished write')
 
 
 def read(MAX_RANGE):
-    BYTE_SIZE = sys.getsizeof(sample_data) * MAX_RANGE
+    qt_bytes = sys.getsizeof(sample_data) * MAX_RANGE
 
     # reading samples
-    START_TIMER = dt.now()
+    start_timer = dt.now()
     for _id in sample_ids:
         sample_request = requests.get(f'{API_url}/sample/{_id}')
         if(sample_request.status_code != 200):
             print('Oooops, errorr')
     FIN_TIMER = dt.now()
-    LATENCY = FIN_TIMER - START_TIMER
-    OPERATION='O'
-    CENARIO='read'
-    QT_REQ=MAX_RANGE
+    latencia = FIN_TIMER - start_timer
+    operation='O'
+    cenario='read'
+    qt_requisicoes=MAX_RANGE
 
-    write_excel(START_TIMER, BYTE_SIZE, FIN_TIMER, LATENCY, OPERATION, CENARIO,QT_REQ)
+    write_excel(start_timer, qt_bytes, FIN_TIMER, latencia, operation, cenario,qt_requisicoes)
 
     print('finished read')
 
