@@ -156,9 +156,11 @@ def write(MAX_RANGE):
             iteration+=1
     FIN_TIMER = dt.now()
     LATENCY = FIN_TIMER - START_TIMER
+    OPERATION='I'
+    CENARIO='write'
+    QT_REQ=MAX_RANGE
 
-
-    write_excel(START_TIMER, BYTE_SIZE, FIN_TIMER, LATENCY, OPERATION='I', CENARIO='write',QT_REQ=MAX_RANGE )
+    write_excel(START_TIMER, BYTE_SIZE, FIN_TIMER, LATENCY, OPERATION, CENARIO,QT_REQ )
 
     print('finished write')
 
@@ -174,8 +176,11 @@ def read(MAX_RANGE):
             print('Oooops, errorr')
     FIN_TIMER = dt.now()
     LATENCY = FIN_TIMER - START_TIMER
+    OPERATION='O'
+    CENARIO='read'
+    QT_REQ=MAX_RANGE
 
-    write_excel(START_TIMER, BYTE_SIZE, FIN_TIMER, LATENCY, OPERATION='O', CENARIO='read',QT_REQ=MAX_RANGE )
+    write_excel(START_TIMER, BYTE_SIZE, FIN_TIMER, LATENCY, OPERATION, CENARIO,QT_REQ )
 
     print('finished read')
 
