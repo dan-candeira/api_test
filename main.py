@@ -139,12 +139,13 @@ def write_excel(START_TIMER, BYTE_SIZE,
 
 
 
+sample_ids = [] # store sample ids in this array after each create
+
+
 def write(MAX_RANGE):
     BYTE_SIZE = sys.getsizeof(sample_data) * MAX_RANGE
 
     iteration = 0
-
-    sample_ids = [] # store sample ids in this array after each create
 
     # writing samples
     START_TIMER = dt.now()
@@ -159,16 +160,16 @@ def write(MAX_RANGE):
 
     write_excel(START_TIMER, BYTE_SIZE, FIN_TIMER, LATENCY, OPERATION='I', CENARIO='write',QT_REQ=MAX_RANGE )
 
-    return sample_ids
+    print('finished write')
 
 
-def read(MAX_RANGE, sample_ids):
+def read(MAX_RANGE):
     BYTE_SIZE = sys.getsizeof(sample_data) * MAX_RANGE
 
     # reading samples
     START_TIMER = dt.now()
     for _id in sample_ids:
-        sample_request = requests.get(f'{API_url}/sample/', data = sample_data)
+        sample_request = requests.get(f'{API_url}/sample/{_id}')
         if(sample_request.status_code != 200):
             print('Oooops, errorr')
     FIN_TIMER = dt.now()
@@ -176,13 +177,15 @@ def read(MAX_RANGE, sample_ids):
 
     write_excel(START_TIMER, BYTE_SIZE, FIN_TIMER, LATENCY, OPERATION='I', CENARIO='write',QT_REQ=MAX_RANGE )
 
+    print('finished read')
+
 
 def start_test(NUMBER_OF_TESTS, MAX_RANGE=100):
     for iteration in range(NUMBER_OF_TESTS):
         time.sleep(1)
         write(MAX_RANGE)
         time.sleep(1)
-        sample_ids = read(MAX_RANGE)
+        read(MAX_RANGE)
         time.sleep(1)
         requests.delete(f"{API_url}/delete-all/1")
         MAX_RANGE += 100
