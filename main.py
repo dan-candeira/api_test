@@ -125,7 +125,7 @@ def write_excel(START_TIMER, BYTE_SIZE,
     "cenario": CENARIO, 
     "configuracao_hard": hardware_config, 
     "configuracao_soft": software_config, 
-    "funcao_api": "sample", 
+    "funcao_api": "/sample", 
     "qt_bytes": BYTE_SIZE, 
     "qt_requisicoes": QT_REQ,
     "time_stamp_init": START_TIMER, 
@@ -175,7 +175,7 @@ def read(MAX_RANGE):
     FIN_TIMER = dt.now()
     LATENCY = FIN_TIMER - START_TIMER
 
-    write_excel(START_TIMER, BYTE_SIZE, FIN_TIMER, LATENCY, OPERATION='I', CENARIO='write',QT_REQ=MAX_RANGE )
+    write_excel(START_TIMER, BYTE_SIZE, FIN_TIMER, LATENCY, OPERATION='O', CENARIO='read',QT_REQ=MAX_RANGE )
 
     print('finished read')
 
