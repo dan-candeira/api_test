@@ -33,9 +33,9 @@ header = format_header(tmp_header)
 # loading the df data
 df = pd.read_csv(csv_file, skiprows=2, 
                     delimiter="\t", header=None)
+
 df = df.drop(columns=41, axis=1)
-print(header)
-print(df.columns)
+
 # adding the header to the df
 df.columns = header
 
@@ -103,7 +103,8 @@ sample_data = {
 }
 
 
-def write_excel(START_TIMER, BYTE_SIZE, FINAL_TIMER, LATENCY, OPERATION):
+def write_excel(START_TIMER, BYTE_SIZE, 
+                FINAL_TIMER, LATENCY, OPERATION, CENARIO, QT_REQ):
 
     hardware_config = f'''
     {platform.uname()}
@@ -119,13 +120,14 @@ def write_excel(START_TIMER, BYTE_SIZE, FINAL_TIMER, LATENCY, OPERATION):
     table_row = pd.DataFrame({
     "id_experimento": str(START_TIMER).replace(':', '').replace('.' ,''), 
     "data": dt.now().date(),
-    "hora": dt.now().time(), 
+    "hora": dt.now().time(),
     "I_O": OPERATION, 
-    "cenario": ["write"], 
+    "cenario": CENARIO, 
     "configuracao_hard": hardware_config, 
     "configuracao_soft": software_config, 
     "funcao_api": "sample", 
     "qt_bytes": BYTE_SIZE, 
+    "qt_requisicoes": QT_REQ,
     "time_stamp_init": START_TIMER, 
     "time_stamp_fin": FINAL_TIMER, 
     "latencia ( J - I )": str(LATENCY)
@@ -135,14 +137,14 @@ def write_excel(START_TIMER, BYTE_SIZE, FINAL_TIMER, LATENCY, OPERATION):
     filename='experiment_sheet.xlsx',df=table_row, 
     sheet_name="Sheet1", header=False, index=False)
 
-sample_ids = []
+
 
 def write(MAX_RANGE):
     BYTE_SIZE = sys.getsizeof(sample_data) * MAX_RANGE
 
     iteration = 0
 
-    #sample_ids = [] # store sample ids in this array after each create
+    sample_ids = [] # store sample ids in this array after each create
 
     # writing samples
     START_TIMER = dt.now()
@@ -155,39 +157,39 @@ def write(MAX_RANGE):
     LATENCY = FIN_TIMER - START_TIMER
 
 
-    write_excel(START_TIMER, BYTE_SIZE, FIN_TIMER, LATENCY, OPERATION='I')
+    write_excel(START_TIMER, BYTE_SIZE, FIN_TIMER, LATENCY, OPERATION='I', CENARIO='write',QT_REQ=MAX_RANGE )
 
-    print('complete write')
+    return sample_ids
 
 
-def read(MAX_RANGE):
+def read(MAX_RANGE, sample_ids):
     BYTE_SIZE = sys.getsizeof(sample_data) * MAX_RANGE
 
     # reading samples
     START_TIMER = dt.now()
     for _id in sample_ids:
         sample_request = requests.get(f'{API_url}/sample/', data = sample_data)
-        if(sample_request.status_code != 201):
+        if(sample_request.status_code != 200):
             print('Oooops, errorr')
     FIN_TIMER = dt.now()
     LATENCY = FIN_TIMER - START_TIMER
 
-    write_excel(START_TIMER, BYTE_SIZE, FIN_TIMER, LATENCY, OPERATION='O')
-    print('complete read')
+    write_excel(START_TIMER, BYTE_SIZE, FIN_TIMER, LATENCY, OPERATION='I', CENARIO='write',QT_REQ=MAX_RANGE )
 
 
 def start_test(NUMBER_OF_TESTS, MAX_RANGE=100):
     for iteration in range(NUMBER_OF_TESTS):
         time.sleep(1)
-        sample_ids = write(MAX_RANGE)
+        write(MAX_RANGE)
         time.sleep(1)
-        read(MAX_RANGE)
+        sample_ids = read(MAX_RANGE)
         time.sleep(1)
         requests.delete(f"{API_url}/delete-all/1")
+        MAX_RANGE += 100
 
 
-run_test = input('Run tests agin? Y or N : ')
+run_test = input('Run tests? Y or N: ')
 
 while run_test.lower() == 'y':
-    number_of_tests = int(input('numero de testes: '))
+    number_of_tests = int(input('number of tests: '))
     start_test(number_of_tests)
