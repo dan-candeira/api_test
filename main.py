@@ -135,7 +135,7 @@ def write_excel(START_TIMER, BYTE_SIZE,
 
     append_df_to_excel(
     filename='experiment_sheet.xlsx',df=table_row, 
-    sheet_name="Sheet1", header=False, index=False)
+    sheet_name="Sheet1", header=False)
 
 
 
@@ -180,7 +180,7 @@ def read(MAX_RANGE):
     CENARIO='read'
     QT_REQ=MAX_RANGE
 
-    write_excel(START_TIMER, BYTE_SIZE, FIN_TIMER, LATENCY, OPERATION, CENARIO,QT_REQ )
+    write_excel(START_TIMER, BYTE_SIZE, FIN_TIMER, LATENCY, OPERATION, CENARIO,QT_REQ)
 
     print('finished read')
 
