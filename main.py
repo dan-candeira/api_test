@@ -118,24 +118,24 @@ def write_excel(start_timer, qt_bytes,
 
     latencia = str(latency)
     table_row = pd.DataFrame({
-    "id_experimento": str(start_timer).replace(':', '').replace('.' ,''), 
-    "data": dt.now().date(),
-    "hora": dt.now().time(),
-    "I_O": operation, 
-    "cenario": cenario, 
-    "configuracao_hard": hardware_config, 
-    "configuracao_soft": software_config, 
-    "funcao_api": "/sample", 
-    "qt_bytes": qt_bytes, 
-    "qt_requisicoesuisicoes": qt_requisicoes,
-    "time_stamp_init": start_timer, 
-    "time_stamp_fin": final_timer, 
-    "latencia ( J - I )": str(latencia)
+    "id_experimento": [str(start_timer).replace(':', '').replace('.' ,'')[], 
+    "data": [dt.now().date()],
+    "hora": [dt.now().time()],
+    "I_O": [operation], 
+    "cenario": [cenario], 
+    "configuracao_hard": [hardware_config], 
+    "configuracao_soft": [software_config], 
+    "funcao_api": ["/sample"], 
+    "qt_bytes": [qt_bytes], 
+    "qt_requisicoesuisicoes": [qt_requisicoes],
+    "time_stamp_init": [start_timer], 
+    "time_stamp_fin": [final_timer], 
+    "latencia ( J - I )": [str(latencia)]
     })
 
     append_df_to_excel(
     filename='experiment_sheet.xlsx',df=table_row, 
-    sheet_name="Sheet1", header=False)
+    sheet_name="Sheet1", header=False, index=False)
 
 
 
