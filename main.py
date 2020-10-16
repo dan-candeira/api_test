@@ -118,7 +118,7 @@ def write_excel(start_timer, qt_bytes,
 
     latencia = str(latency)
     table_row = pd.DataFrame({
-    "id_experimento": [str(start_timer).replace(':', '').replace('.' ,'')[], 
+    "id_experimento": [str(start_timer).replace(':', '').replace('.' ,'')], 
     "data": [dt.now().date()],
     "hora": [dt.now().time()],
     "I_O": [operation], 
