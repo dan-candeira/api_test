@@ -158,9 +158,8 @@ def write(MAX_RANGE):
     latencia = FIN_TIMER - start_timer
     operation='I'
     cenario='write'
-    qt_requisicoes=MAX_RANGE
 
-    write_excel(start_timer, qt_bytes, FIN_TIMER, latencia, operation, cenario,qt_requisicoes )
+    write_excel(start_timer, qt_bytes, FIN_TIMER, latencia, operation, cenario,MAX_RANGE )
 
     print('finished write')
 
@@ -178,9 +177,8 @@ def read(MAX_RANGE):
     latencia = FIN_TIMER - start_timer
     operation='O'
     cenario='read'
-    qt_requisicoes=MAX_RANGE
 
-    write_excel(start_timer, qt_bytes, FIN_TIMER, latencia, operation, cenario,qt_requisicoes)
+    write_excel(start_timer, qt_bytes, FIN_TIMER, latencia, operation, cenario,MAX_RANGE)
 
     print('finished read')
 
