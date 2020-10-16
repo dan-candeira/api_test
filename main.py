@@ -4,7 +4,7 @@ from datetime import datetime as dt
 import requests
 import sys
 import platform
-import psutil
+# import psutil
 import json
 import time
 
@@ -109,9 +109,8 @@ def write_excel(START_TIMER, BYTE_SIZE, FINAL_TIMER, LATENCY):
 
 
     software_config = f'''
-    total_CPU's: {psutil.cpu_count()},
-    swap: {psutil.swap_memory()}
-    particoes: {psutil.disk_partitions()}
+    total_disco: 30gb,
+    ram: 2gb
     '''
 
 
