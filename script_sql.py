@@ -39,7 +39,7 @@ df = df.drop(columns=41, axis=1)
 df.columns = header
 
 # reading the json file with pre registered data
-data = open("data.json").read()
+data = open("data_sql.json").read()
 data = json.loads(data)
 
 

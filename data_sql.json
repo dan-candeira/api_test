@@ -1,15 +1,12 @@
 {
     "patient": {
-        "_id": "11111111111",
+        "id": "11111111111",
         "first_name": "Jhon",
         "last_name":"Doe"
     },
-    "sensorType" : {
-        "name": "accelerometer",
-        "mesuaring_dimentions": ["x","y","z"]
-    },
     "sensor": {
-        "_model": "MPU-6050"
+        "model": "MPU-6050",
+        "measuring_dimentions": ["x","y","z"]
     }, 
     "equipment": {
         "_id": "111111111111",
