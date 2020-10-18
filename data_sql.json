@@ -1,6 +1,6 @@
 {
     "patient": {
-        "id": "11111111111",
+        "cpf": "11111111111",
         "first_name": "Jhon",
         "last_name":"Doe"
     },

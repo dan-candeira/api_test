@@ -8,7 +8,7 @@ import platform
 import json
 import time
 
-API_url = "http://localhost:8000/api"
+API_url = "http://192.168.100.7/api"
 csv_file = 'lazaro_01_r.txt'
 
 
