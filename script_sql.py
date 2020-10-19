@@ -8,7 +8,8 @@ import platform
 import json
 import time
 
-API_url = "http://192.168.100.7/api"
+# API_url = "http://192.168.100.7/api"
+API_url = "http://localhost:8000/api"
 csv_file = 'lazaro_01_r.txt'
 
 
@@ -53,25 +54,28 @@ sensor_request = requests.post(f'{API_url}/sensors/', data=data['sensor'])
 sensor_response = sensor_request.json()
 
 sensors = []
-sensors.append(sensor_response['id'])
+sensors.append(int(sensor_response['id']))
 data['equipment']['sensors'] = sensors
 
 equipment_request = requests.post(
     f'{API_url}/equipments/', data=data['equipment'])
 equipment_response = equipment_request.json()
+print(equipment_response)
 
 equipment_id = equipment_response['id']
 
 loan_data = {"equipment": equipment_id, "patient": patient_id}
-requests.post(
+loan_history = requests.post(
     f'{API_url}/loans-history/', data=loan_data)
 
 collect_data = {
-    "equipment": equipment_id
+    "equipment": equipment_id,
+    "patient": patient_id
 }
 collect_request = requests.post(f'{API_url}/collects/', data=collect_data)
 collect_response = collect_request.json()
-collect_id = collect_response['id']
+print(collect_response)
+collect_id = int(collect_response['id'])
 
 
 temp = 36.5
@@ -100,15 +104,6 @@ sample_data = {
 def write_excel(start_timer, qt_bytes,
                 final_timer, latency, operation, cenario, qt_requisicoes):
 
-    hardware_config = f'''
-    {platform.uname()}
-    '''
-
-    software_config = f'''
-    DISCO_TOTAL: 30gb,
-    RAM: 2gb
-    '''
-
     latencia = str(latency)
     table_row = pd.DataFrame({
         "id_experimento": [str(start_timer).replace(':', '').replace('.', '')],
@@ -116,9 +111,7 @@ def write_excel(start_timer, qt_bytes,
         "hora": [dt.now().time()],
         "I_O": [operation],
         "cenario": [cenario],
-        "configuracao_hard": [hardware_config],
-        "configuracao_soft": [software_config],
-        "funcao_api": ["/sample"],
+        "funcao_api": ["/samples"],
         "qt_bytes": [qt_bytes],
         "qt_requisicoesuisicoes": [qt_requisicoes],
         "time_stamp_init": [start_timer],
@@ -143,8 +136,9 @@ def write(MAX_RANGE):
     start_timer = dt.now()
     for iteration in range(MAX_RANGE):
         sample_request = requests.post(f'{API_url}/samples/', data=sample_data)
+        print(sample_request.json())
         if(sample_request.status_code == 201):
-            sample_ids.append(sample_request.json()['id'])
+            sample_ids.append(int(sample_request.json()['id']))
             iteration += 1
     FIN_TIMER = dt.now()
     latencia = FIN_TIMER - start_timer

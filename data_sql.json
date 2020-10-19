@@ -1,6 +1,6 @@
 {
     "patient": {
-        "cpf": "11111111111",
+        "id": "11111111111",
         "first_name": "Jhon",
         "last_name":"Doe"
     },
@@ -9,7 +9,7 @@
         "measuring_dimentions": ["x","y","z"]
     }, 
     "equipment": {
-        "_id": "111111111111",
+        "id": "111111111111",
         "name": "parkinson_01",
         "description":"disposito 01",
         "samp_frequency": 60,

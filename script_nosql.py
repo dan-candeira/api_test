@@ -101,15 +101,6 @@ sample_data = {
 def write_excel(start_timer, qt_bytes,
                 final_timer, latency, operation, cenario, qt_requisicoes):
 
-    hardware_config = f'''
-    {platform.uname()}
-    '''
-
-    software_config = f'''
-    total_disco: 30gb,
-    ram: 2gb
-    '''
-
     latencia = str(latency)
     table_row = pd.DataFrame({
         "id_experimento": [str(start_timer).replace(':', '').replace('.', '')],
@@ -117,9 +108,7 @@ def write_excel(start_timer, qt_bytes,
         "hora": [dt.now().time()],
         "I_O": [operation],
         "cenario": [cenario],
-        "configuracao_hard": [hardware_config],
-        "configuracao_soft": [software_config],
-        "funcao_api": ["/sample"],
+        "funcao_api": ["/samples"],
         "qt_bytes": [qt_bytes],
         "qt_requisicoesuisicoes": [qt_requisicoes],
         "time_stamp_init": [start_timer],
@@ -144,6 +133,7 @@ def write(MAX_RANGE):
     start_timer = dt.now()
     for iteration in range(MAX_RANGE):
         sample_request = requests.post(f'{API_url}/samples/', data=sample_data)
+        print(sample_request.json())
         if(sample_request.status_code == 201):
             sample_ids.append(sample_request.json()['_id'])
             iteration += 1
@@ -164,7 +154,7 @@ def read(MAX_RANGE):
     # reading samples
     start_timer = dt.now()
     for _id in sample_ids:
-        sample_request = requests.get(f'{API_url}/samples/{_id}')
+        sample_request = requests.get(f'{API_url}/samples/{_id}/')
         if(sample_request.status_code != 200):
             print('Oooops, errorr')
     FIN_TIMER = dt.now()
