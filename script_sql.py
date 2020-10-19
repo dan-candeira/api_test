@@ -157,7 +157,7 @@ def read(MAX_RANGE):
     # reading samples
     start_timer = dt.now()
     for _id in sample_ids:
-        sample_request = requests.get(f'{API_url}/samples/{_id}')
+        sample_request = requests.get(f'{API_url}/samples/{_id}/')
         if(sample_request.status_code != 200):
             print('Oooops, errorr')
     FIN_TIMER = dt.now()
