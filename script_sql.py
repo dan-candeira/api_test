@@ -27,12 +27,12 @@ def format_header(header):
 
 # loading and formating the df header
 tmp_header = pd.read_csv(csv_file, header=1, nrows=0,
-                         delimiter="\t", sep="\t")
+                        delimiter="\t", sep="\t")
 header = format_header(tmp_header)
 
 # loading the df data
 df = pd.read_csv(csv_file, skiprows=2,
-                 delimiter="\t", header=None)
+                delimiter="\t", header=None)
 
 df = df.drop(columns=41, axis=1)
 
@@ -43,62 +43,64 @@ df.columns = header
 data = open("data_sql.json").read()
 data = json.loads(data)
 
+def db_prep():
 
-time.sleep(1)
+    time.sleep(1)
 
-patient_request = requests.post(f'{API_url}/patients/', data=data['patient'])
-patient_response = patient_request.json()
-patient_id = patient_response['id']
+    patient_request = requests.post(f'{API_url}/patients/', data=data['patient'])
+    patient_response = patient_request.json()
+    patient_id = patient_response['id']
 
-sensor_request = requests.post(f'{API_url}/sensors/', data=data['sensor'])
-sensor_response = sensor_request.json()
+    sensor_request = requests.post(f'{API_url}/sensors/', data=data['sensor'])
+    sensor_response = sensor_request.json()
 
-sensors = []
-sensors.append(int(sensor_response['id']))
-data['equipment']['sensors'] = sensors
+    sensors = []
+    sensors.append(int(sensor_response['id']))
+    data['equipment']['sensors'] = sensors
 
-equipment_request = requests.post(
-    f'{API_url}/equipments/', data=data['equipment'])
-equipment_response = equipment_request.json()
-print(equipment_response)
+    equipment_request = requests.post(
+        f'{API_url}/equipments/', data=data['equipment'])
+    equipment_response = equipment_request.json()
+    print(equipment_response)
 
-equipment_id = equipment_response['id']
+    equipment_id = equipment_response['id']
 
-loan_data = {"equipment": equipment_id, "patient": patient_id}
-loan_history = requests.post(
-    f'{API_url}/loans-history/', data=loan_data)
+    loan_data = {"equipment": equipment_id, "patient": patient_id}
+    loan_history = requests.post(
+        f'{API_url}/loans-history/', data=loan_data)
 
-collect_data = {
-    "equipment": equipment_id,
-    "patient": patient_id
-}
-collect_request = requests.post(f'{API_url}/collects/', data=collect_data)
-collect_response = collect_request.json()
-print(collect_response)
-collect_id = int(collect_response['id'])
-
-
-temp = 36.5
-sample_header = ['time', 'ac_x', 'ac_y', 'ac_z', 'g_x', 'g_x', 'g_z', 'temp']
-
-captured_data = []
-captured_data.append([
-    df[['time']].iloc[1]['time'],
-    df[['a1_x']].iloc[1]['a1_x'],
-    df[['a1_y']].iloc[1]['a1_y'],
-    df[['a1_z']].iloc[1]['a1_z'],
-    df[['g1_x']].iloc[1]['g1_x'],
-    df[['g1_y']].iloc[1]['g1_y'],
-    df[['g1_z']].iloc[1]['g1_z'],
-    temp
-])
+    collect_data = {
+        "equipment": equipment_id,
+        "patient": patient_id
+    }
+    collect_request = requests.post(f'{API_url}/collects/', data=collect_data)
+    collect_response = collect_request.json()
+    collect_id = int(collect_response['id'])
 
 
-sample_data = {
+    temp = 36.5
+    sample_header = ['time', 'ac_x', 'ac_y', 'ac_z', 'g_x', 'g_x', 'g_z', 'temp']
+
+    captured_data = []
+    captured_data.append([
+        df[['time']].iloc[1]['time'],
+        df[['a1_x']].iloc[1]['a1_x'],
+        df[['a1_y']].iloc[1]['a1_y'],
+        df[['a1_z']].iloc[1]['a1_z'],
+        df[['g1_x']].iloc[1]['g1_x'],
+        df[['g1_y']].iloc[1]['g1_y'],
+        df[['g1_z']].iloc[1]['g1_z'],
+        temp
+    ])
+
+
+    sample_data = {
     'header': sample_header,
     'captured_data': captured_data,
     'collect': collect_id
-}
+    }
+
+    return sample_data
 
 
 def write_excel(start_timer, qt_bytes,
@@ -121,16 +123,15 @@ def write_excel(start_timer, qt_bytes,
 
     append_df_to_excel(
         filename='experiment_sql.xlsx', df=table_row,
-        sheet_name="Sheet1", header=False)
+        sheet_name="Sheet1", header=False, index=False)
 
 
-sample_ids = []  # store sample ids in this array after each create
 
-
-def write(MAX_RANGE):
+def write(MAX_RANGE, sample_data):
     qt_bytes = sys.getsizeof(sample_data) * MAX_RANGE
 
     iteration = 0
+    sample_ids = []  # store sample ids in this array after each create
 
     # writing samples
     start_timer = dt.now()
@@ -149,9 +150,10 @@ def write(MAX_RANGE):
                 latencia, operation, cenario, MAX_RANGE)
 
     print('finished write')
+    return sample_ids
 
 
-def read(MAX_RANGE):
+def read(MAX_RANGE, sample_ids, sample_data):
     qt_bytes = sys.getsizeof(sample_data) * MAX_RANGE
 
     # reading samples
@@ -173,10 +175,11 @@ def read(MAX_RANGE):
 
 def start_test(NUMBER_OF_TESTS, MAX_RANGE=100):
     for iteration in range(NUMBER_OF_TESTS):
+        sample_data = db_prep()
         time.sleep(1)
-        write(MAX_RANGE)
+        samples_id = write(MAX_RANGE, sample_data)
         time.sleep(1)
-        read(MAX_RANGE)
+        read(MAX_RANGE, samples_id, sample_data)
         time.sleep(1)
         requests.delete(f"{API_url}/delete/")
         MAX_RANGE += 100

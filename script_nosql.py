@@ -42,60 +42,62 @@ df.columns = header
 data = open("data_nosql.json").read()
 data = json.loads(data)
 
+def db_prep():
+    time.sleep(1)
 
-time.sleep(1)
+    patient_request = requests.post(f'{API_url}/patients/', data=data['patient'])
+    patient_response = patient_request.json()
+    patient_id = patient_response['_id']
 
-patient_request = requests.post(f'{API_url}/patients/', data=data['patient'])
-patient_response = patient_request.json()
-patient_id = patient_response['_id']
+    sensor_request = requests.post(f'{API_url}/sensors/', data=data['sensor'])
+    sensor_response = sensor_request.json()
+    print(sensor_response)
 
-sensor_request = requests.post(f'{API_url}/sensors/', data=data['sensor'])
-sensor_response = sensor_request.json()
-print(sensor_response)
+    sensors = []
+    sensors.append(sensor_response['_id'])
+    data['equipment']['sensors'] = sensors
 
-sensors = []
-sensors.append(sensor_response['_id'])
-data['equipment']['sensors'] = sensors
+    equipment_request = requests.post(
+        f'{API_url}/equipments/', data=data['equipment'])
+    equipment_response = equipment_request.json()
 
-equipment_request = requests.post(
-    f'{API_url}/equipments/', data=data['equipment'])
-equipment_response = equipment_request.json()
+    equipment_id = equipment_response['_id']
 
-equipment_id = equipment_response['_id']
+    loan_data = {"equipment": equipment_id, "patient": patient_id}
+    requests.post(
+        f'{API_url}/loans-history/', data=loan_data)
 
-loan_data = {"equipment": equipment_id, "patient": patient_id}
-requests.post(
-    f'{API_url}/loans-history/', data=loan_data)
-
-collect_data = {
-    "equipment": equipment_id
-}
-collect_request = requests.post(f'{API_url}/collects/', data=collect_data)
-collect_response = collect_request.json()
-collect_id = collect_response['_id']
-
-
-temp = 36.5
-sample_header = ['time', 'ac_x', 'ac_y', 'ac_z', 'g_x', 'g_x', 'g_z', 'temp']
-
-captured_data = []
-captured_data.append([
-    df[['time']].iloc[1]['time'],
-    df[['a1_x']].iloc[1]['a1_x'],
-    df[['a1_y']].iloc[1]['a1_y'],
-    df[['a1_z']].iloc[1]['a1_z'],
-    df[['g1_x']].iloc[1]['g1_x'],
-    df[['g1_y']].iloc[1]['g1_y'],
-    df[['g1_z']].iloc[1]['g1_z'],
-    temp
-])
+    collect_data = {
+        "equipment": equipment_id
+    }
+    collect_request = requests.post(f'{API_url}/collects/', data=collect_data)
+    collect_response = collect_request.json()
+    collect_id = collect_response['_id']
 
 
-sample_data = {
-    'header': sample_header,
-    'captured_data': captured_data,
-    'collect': collect_id
-}
+    temp = 36.5
+    sample_header = ['time', 'ac_x', 'ac_y', 'ac_z', 'g_x', 'g_x', 'g_z', 'temp']
+
+    captured_data = []
+    captured_data.append([
+        df[['time']].iloc[1]['time'],
+        df[['a1_x']].iloc[1]['a1_x'],
+        df[['a1_y']].iloc[1]['a1_y'],
+        df[['a1_z']].iloc[1]['a1_z'],
+        df[['g1_x']].iloc[1]['g1_x'],
+        df[['g1_y']].iloc[1]['g1_y'],
+        df[['g1_z']].iloc[1]['g1_z'],
+        temp
+    ])
+
+
+    sample_data = {
+        'header': sample_header,
+        'captured_data': captured_data,
+        'collect': collect_id
+    }
+
+    return sample_data
 
 
 def write_excel(start_timer, qt_bytes,
@@ -121,13 +123,12 @@ def write_excel(start_timer, qt_bytes,
         sheet_name="Sheet1", header=False)
 
 
-sample_ids = []  # store sample ids in this array after each create
-
 
 def write(MAX_RANGE):
     qt_bytes = sys.getsizeof(sample_data) * MAX_RANGE
 
     iteration = 0
+    sample_ids = []  # store sample ids in this array after each create
 
     # writing samples
     start_timer = dt.now()
@@ -146,6 +147,7 @@ def write(MAX_RANGE):
                 latencia, operation, cenario, MAX_RANGE)
 
     print('finished write')
+    return sample_ids
 
 
 def read(MAX_RANGE):
@@ -170,10 +172,11 @@ def read(MAX_RANGE):
 
 def start_test(NUMBER_OF_TESTS, MAX_RANGE=100):
     for iteration in range(NUMBER_OF_TESTS):
+        sample_data = db_prep()
         time.sleep(1)
-        write(MAX_RANGE)
+        samples_id = write(MAX_RANGE, sample_data)
         time.sleep(1)
-        read(MAX_RANGE)
+        read(MAX_RANGE, samples_id, sample_data)
         time.sleep(1)
         requests.delete(f"{API_url}/delete/")
         MAX_RANGE += 100
