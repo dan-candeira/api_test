@@ -8,7 +8,8 @@ import platform
 import json
 import time
 
-API_url = "http://192.168.100.7/api"
+# API_url = "http://192.168.100.7:5000"
+API_url = "http://127.0.0.1:5000"
 csv_file = 'lazaro_01_r.txt'
 
 
@@ -42,41 +43,41 @@ df.columns = header
 data = open("data_nosql.json").read()
 data = json.loads(data)
 
+
 def db_prep():
     time.sleep(1)
-
-    patient_request = requests.post(f'{API_url}/patients/', data=data['patient'])
+    patient_request = requests.post(
+        f'{API_url}/patient', json=data['patient'])
     patient_response = patient_request.json()
     patient_id = patient_response['_id']
 
-    sensor_request = requests.post(f'{API_url}/sensors/', data=data['sensor'])
+    sensor_request = requests.post(f'{API_url}/sensor', json=data['sensor'])
     sensor_response = sensor_request.json()
-    print(sensor_response)
 
     sensors = []
     sensors.append(sensor_response['_id'])
     data['equipment']['sensors'] = sensors
 
     equipment_request = requests.post(
-        f'{API_url}/equipments/', data=data['equipment'])
+        f'{API_url}/equipment', json=data['equipment'])
     equipment_response = equipment_request.json()
 
     equipment_id = equipment_response['_id']
 
     loan_data = {"equipment": equipment_id, "patient": patient_id}
     requests.post(
-        f'{API_url}/loans-history/', data=loan_data)
+        f'{API_url}/loan-history', json=loan_data)
 
     collect_data = {
         "equipment": equipment_id
     }
-    collect_request = requests.post(f'{API_url}/collects/', data=collect_data)
+    collect_request = requests.post(f'{API_url}/collect', json=collect_data)
     collect_response = collect_request.json()
     collect_id = collect_response['_id']
 
-
     temp = 36.5
-    sample_header = ['time', 'ac_x', 'ac_y', 'ac_z', 'g_x', 'g_x', 'g_z', 'temp']
+    sample_header = ['time', 'ac_x', 'ac_y',
+                     'ac_z', 'g_x', 'g_x', 'g_z', 'temp']
 
     captured_data = []
     captured_data.append([
@@ -90,10 +91,9 @@ def db_prep():
         temp
     ])
 
-
     sample_data = {
         'header': sample_header,
-        'captured_data': captured_data,
+        'data_captured': captured_data,
         'collect': collect_id
     }
 
@@ -123,8 +123,7 @@ def write_excel(start_timer, qt_bytes,
         sheet_name="Sheet1", header=False)
 
 
-
-def write(MAX_RANGE):
+def write(MAX_RANGE, sample_data):
     qt_bytes = sys.getsizeof(sample_data) * MAX_RANGE
 
     iteration = 0
@@ -133,10 +132,9 @@ def write(MAX_RANGE):
     # writing samples
     start_timer = dt.now()
     for iteration in range(MAX_RANGE):
-        sample_request = requests.post(f'{API_url}/samples/', data=sample_data)
-        print(sample_request.json())
-        if(sample_request.status_code == 201):
-            sample_ids.append(sample_request.json()['_id'])
+        sample_request = requests.post(f'{API_url}/sample', json=sample_data)
+        if(sample_request.status_code == 200):
+            sample_ids.append(sample_request.json()['_id']['$oid'])
             iteration += 1
     FIN_TIMER = dt.now()
     latencia = FIN_TIMER - start_timer
@@ -150,13 +148,12 @@ def write(MAX_RANGE):
     return sample_ids
 
 
-def read(MAX_RANGE):
+def read(MAX_RANGE, sample_ids, sample_data):
     qt_bytes = sys.getsizeof(sample_data) * MAX_RANGE
-
     # reading samples
     start_timer = dt.now()
     for _id in sample_ids:
-        sample_request = requests.get(f'{API_url}/samples/{_id}/')
+        sample_request = requests.get(f'{API_url}/sample/{_id}')
         if(sample_request.status_code != 200):
             print('Oooops, errorr')
     FIN_TIMER = dt.now()
@@ -178,7 +175,7 @@ def start_test(NUMBER_OF_TESTS, MAX_RANGE=100):
         time.sleep(1)
         read(MAX_RANGE, samples_id, sample_data)
         time.sleep(1)
-        requests.delete(f"{API_url}/delete/")
+        requests.delete(f"{API_url}/delete")
         MAX_RANGE += 100
 
 
