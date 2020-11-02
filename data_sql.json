@@ -1,6 +1,6 @@
 {
     "patient": {
-        "id": "11111111111",
+        "cpf": "11111111111",
         "first_name": "Jhon",
         "last_name":"Doe"
     },
@@ -9,10 +9,10 @@
         "measuring_dimentions": ["x","y","z"]
     }, 
     "equipment": {
-        "id": "111111111111",
+        "mac_address": "111111111111",
         "name": "parkinson_01",
         "description":"disposito 01",
-        "samp_frequency": 60,
+        "samppling_frequency": 60,
         "available": true
     }
 }
