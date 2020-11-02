@@ -8,8 +8,8 @@ import platform
 import json
 import time
 
-# API_url = "http://192.168.100.7/api"
-API_url = "http://localhost:8000/api"
+# API_url = "http://192.168.100.7:5000"
+API_url = "http://localhost:5000"
 csv_file = 'lazaro_01_r.txt'
 
 
@@ -47,11 +47,11 @@ def db_prep():
 
     time.sleep(1)
 
-    patient_request = requests.post(f'{API_url}/patients/', data=data['patient'])
+    patient_request = requests.post(f'{API_url}/patient', json=data['patient'])
     patient_response = patient_request.json()
-    patient_id = patient_response['id']
+    patient_id = patient_response['cpf']
 
-    sensor_request = requests.post(f'{API_url}/sensors/', data=data['sensor'])
+    sensor_request = requests.post(f'{API_url}/sensor', json=data['sensor'])
     sensor_response = sensor_request.json()
 
     sensors = []
@@ -59,21 +59,21 @@ def db_prep():
     data['equipment']['sensors'] = sensors
 
     equipment_request = requests.post(
-        f'{API_url}/equipments/', data=data['equipment'])
+        f'{API_url}/equipment', json=data['equipment'])
     equipment_response = equipment_request.json()
     print(equipment_response)
 
-    equipment_id = equipment_response['id']
+    equipment_id = equipment_response['mac_address']
 
     loan_data = {"equipment": equipment_id, "patient": patient_id}
     loan_history = requests.post(
-        f'{API_url}/loans-history/', data=loan_data)
+        f'{API_url}/loan-history', json=loan_data)
 
     collect_data = {
         "equipment": equipment_id,
         "patient": patient_id
     }
-    collect_request = requests.post(f'{API_url}/collects/', data=collect_data)
+    collect_request = requests.post(f'{API_url}/collect', json=collect_data)
     collect_response = collect_request.json()
     collect_id = int(collect_response['id'])
 
@@ -96,7 +96,7 @@ def db_prep():
 
     sample_data = {
     'header': sample_header,
-    'captured_data': captured_data,
+    'data_captured': captured_data,
     'collect': collect_id
     }
 
@@ -136,8 +136,7 @@ def write(MAX_RANGE, sample_data):
     # writing samples
     start_timer = dt.now()
     for iteration in range(MAX_RANGE):
-        sample_request = requests.post(f'{API_url}/samples/', data=sample_data)
-        print(sample_request.json())
+        sample_request = requests.post(f'{API_url}/sample', json=sample_data)
         if(sample_request.status_code == 201):
             sample_ids.append(int(sample_request.json()['id']))
             iteration += 1
@@ -159,7 +158,7 @@ def read(MAX_RANGE, sample_ids, sample_data):
     # reading samples
     start_timer = dt.now()
     for _id in sample_ids:
-        sample_request = requests.get(f'{API_url}/samples/{_id}/')
+        sample_request = requests.get(f'{API_url}/sample/{_id}')
         if(sample_request.status_code != 200):
             print('Oooops, errorr')
     FIN_TIMER = dt.now()
@@ -181,7 +180,7 @@ def start_test(NUMBER_OF_TESTS, MAX_RANGE=100):
         time.sleep(1)
         read(MAX_RANGE, samples_id, sample_data)
         time.sleep(1)
-        requests.delete(f"{API_url}/delete/")
+        requests.delete(f"{API_url}/delete")
         MAX_RANGE += 100
 
 
